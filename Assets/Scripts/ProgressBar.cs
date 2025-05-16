@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class ProgressBar : MonoBehaviour
 {
+    [SerializeField] GameObject winScreen;
+    [SerializeField] GameObject loseScreen;
     [SerializeField] PlayerInput playerInput;
     [SerializeField] Transform spawnedObjectContainer;
     [SerializeField] int amountToDestroy = 3;
@@ -38,6 +40,9 @@ public class ProgressBar : MonoBehaviour
             var rbOfTargetedObject = targetedObject.GetComponent<Rigidbody2D>();
             targetedObject.transform.SetParent(transform);
             targetedObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            var scaleFactor = targetedObject.transform.localScale * 0.9f;
+            targetedObject.transform.localScale = scaleFactor;
 
             rbOfTargetedObject.bodyType = RigidbodyType2D.Kinematic;
             rbOfTargetedObject.gravityScale = 0;
@@ -83,12 +88,14 @@ public class ProgressBar : MonoBehaviour
     {
         if (objectsInBar >= conditionToLoose)
         {
-            Debug.Log("Game over");
+            loseScreen.SetActive(true);
+            spawnedObjectContainer.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
 
         if (objectsInContainer < 1)
         {
-            Debug.Log("Level complete");
+            winScreen.SetActive(true);
         }
     }
 }
