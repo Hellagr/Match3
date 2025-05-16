@@ -41,5 +41,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: GroupA
+    uniqueID: 467713021
+    locked: 0
+  - name: GroupB
+    uniqueID: 2920946749
+    locked: 0
+  - name: GroupC
+    uniqueID: 1150181591
+    locked: 0
+  - name: GroupD
+    uniqueID: 1071192423
+    locked: 0
   m_RenderingLayers:
   - Default

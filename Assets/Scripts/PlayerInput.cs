@@ -1,11 +1,12 @@
-using System.Drawing;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerInput : MonoBehaviour
 {
     InputSystem_Actions action;
-    Vector2 point;
+
+    public event Action<Vector2> ObjectAddedToBar;
 
     void Awake()
     {
@@ -20,16 +21,9 @@ public class PlayerInput : MonoBehaviour
 
     private void Point(InputAction.CallbackContext context)
     {
-        point = context.ReadValue<Vector2>();
+        Vector2 point = Touchscreen.current.primaryTouch.position.ReadValue();
 
-        Vector2 worldPoint = Camera.main.ScreenToWorldPoint(point);
-
-        RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
-        if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Figure"))
-        {
-            var parent = hit.collider.gameObject.transform.parent;
-            parent.parent.gameObject.SetActive(false);
-        }
+        ObjectAddedToBar?.Invoke(point);
     }
 
     void OnDisable()

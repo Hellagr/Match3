@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class Generator : MonoBehaviour
@@ -17,6 +17,8 @@ public class Generator : MonoBehaviour
         }
     }
 
+    HashSet<StringBuilder> existingTypes = new();
+
     void Awake()
     {
         GenerateFigures();
@@ -29,18 +31,33 @@ public class Generator : MonoBehaviour
         {
             var figure = Instantiate(defaultPrefab, transform.position, Quaternion.identity);
 
+            StringBuilder numericalTypeOfFigure = new StringBuilder();
+
             foreach (Transform transformChild in figure.transform)
             {
                 System.Random rnd = new System.Random();
                 var randomChild = rnd.Next(0, transformChild.childCount);
 
+                numericalTypeOfFigure.Append(randomChild.ToString());
+
                 GameObject child = transformChild.GetChild(randomChild).gameObject;
                 child.SetActive(true);
             }
 
+            //questionable
+            if (!existingTypes.Contains(numericalTypeOfFigure))
+            {
+                existingTypes.Add(numericalTypeOfFigure);
+                figure.GetComponent<TypeOfFigure>().SetNumericType(int.Parse(numericalTypeOfFigure.ToString()));
+            }
+            else
+            {
+                i--;
+                continue;
+            }
+
             figure.SetActive(false);
 
-            //problem with the same figures
             for (int j = 0; j < amountOfSameFigures; j++)
             {
                 figures.Add(figure);
