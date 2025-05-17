@@ -17,7 +17,7 @@ public class Generator : MonoBehaviour
         }
     }
 
-    HashSet<StringBuilder> existingTypes = new();
+    HashSet<string> existingTypes = new();
 
     void Awake()
     {
@@ -44,14 +44,17 @@ public class Generator : MonoBehaviour
                 child.SetActive(true);
             }
 
-            //questionable
-            if (!existingTypes.Contains(numericalTypeOfFigure))
+
+            var key = numericalTypeOfFigure.ToString();
+
+            if (!existingTypes.Contains(key))
             {
-                existingTypes.Add(numericalTypeOfFigure);
-                figure.GetComponent<TypeOfFigure>().SetNumericType(int.Parse(numericalTypeOfFigure.ToString()));
+                existingTypes.Add(key);
+                figure.GetComponent<TypeOfFigure>().NumericType = int.Parse(key);
             }
             else
             {
+                Destroy(figure);
                 i--;
                 continue;
             }

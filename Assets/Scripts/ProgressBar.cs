@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,10 @@ public class ProgressBar : MonoBehaviour
     [SerializeField] GameObject loseScreen;
     [SerializeField] PlayerInput playerInput;
     [SerializeField] Transform spawnedObjectContainer;
+    [SerializeField] ParticleSystem destroyEffect;
     [SerializeField] int amountToDestroy = 3;
     [SerializeField] int conditionToLoose = 7;
+    [SerializeField] float scaleSpeed = 2f;
 
     Dictionary<int, int> numericTypeAmount = new Dictionary<int, int>();
 
@@ -20,11 +23,6 @@ public class ProgressBar : MonoBehaviour
     private void PutObjectToBar(Vector2 point)
     {
         ManageObjects(point);
-
-        void OnDisable()
-        {
-            playerInput.ObjectAddedToBar -= PutObjectToBar;
-        }
     }
 
     private void ManageObjects(Vector2 point)
@@ -32,56 +30,116 @@ public class ProgressBar : MonoBehaviour
         Vector2 worldPoint = Camera.main.ScreenToWorldPoint(point);
 
         RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
-        if (hit.collider != null && hit.collider.gameObject.layer == LayerMask.NameToLayer("Figure"))
+
+        if (hit.collider != null && hit.collider.enabled == true && hit.collider.gameObject.layer == LayerMask.NameToLayer("Figure"))
         {
-            var parent = hit.collider.gameObject.transform.parent;
-            var targetedObject = parent.transform.parent;
+            hit.collider.enabled = false;
 
-            var rbOfTargetedObject = targetedObject.GetComponent<Rigidbody2D>();
-            targetedObject.transform.SetParent(transform);
-            targetedObject.transform.rotation = Quaternion.Euler(0, 0, 0);
 
-            var scaleFactor = targetedObject.transform.localScale * 0.9f;
-            targetedObject.transform.localScale = scaleFactor;
+            Transform targetedObject = FindParent(hit);
 
-            rbOfTargetedObject.bodyType = RigidbodyType2D.Kinematic;
-            rbOfTargetedObject.gravityScale = 0;
-            rbOfTargetedObject.linearVelocity = Vector2.zero;
-            rbOfTargetedObject.angularVelocity = 0f;
+            Vector2 lossyScaleObject = new Vector2(targetedObject.lossyScale.x / transform.lossyScale.x, targetedObject.lossyScale.y / transform.lossyScale.y);
 
-            var typeOfFigure = targetedObject.GetComponent<TypeOfFigure>();
-            int numericType = typeOfFigure.numericType;
+            Vector2 scaleObjectsForBar = lossyScaleObject * 0.9f;
 
-            if (numericTypeAmount.TryGetValue(numericType, out int value))
+            StartCoroutine(FadeOut(targetedObject, scaleObjectsForBar));
+        }
+    }
+
+    private IEnumerator FadeOut(Transform parent, Vector2 scaleObjectsForBar)
+    {
+        var t = 0f;
+
+        while (parent.localScale.x > 0.1 && parent.localScale.y > 0.1)
+        {
+            t += Time.deltaTime;
+
+            parent.localScale = Vector2.Lerp(parent.localScale, Vector2.zero, t * scaleSpeed);
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        parent.localScale = Vector2.zero;
+
+        PutObjectOnBar(parent);
+
+        StartCoroutine(FadeIn(parent, scaleObjectsForBar));
+        CaptureObject(parent);
+    }
+
+    private IEnumerator FadeIn(Transform parent, Vector2 ScaleObjectsForBar)
+    {
+        var t = 0f;
+
+        while (parent.localScale.x < ScaleObjectsForBar.x && parent.localScale.y < ScaleObjectsForBar.y)
+        {
+            t += Time.deltaTime;
+
+            parent.localScale = Vector2.Lerp(parent.localScale, ScaleObjectsForBar, t * scaleSpeed);
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        RecalculateObjectsOnBar(parent);
+
+        CheckGameResult(transform.childCount, spawnedObjectContainer.childCount);
+    }
+
+    private static Transform FindParent(RaycastHit2D hit)
+    {
+        var parent = hit.collider.gameObject.transform.parent;
+        var targetedObject = parent.transform.parent;
+        return targetedObject;
+    }
+
+    private void PutObjectOnBar(Transform targetedObject)
+    {
+        targetedObject.transform.SetParent(transform);
+        targetedObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    private void RecalculateObjectsOnBar(Transform targetedObject)
+    {
+        var figureComponent = targetedObject.GetComponent<TypeOfFigure>();
+        int numericType = figureComponent.NumericType;
+
+        if (numericTypeAmount.TryGetValue(numericType, out int value))
+        {
+            int amount = value + 1;
+
+            if (amount > 2)
             {
-                int amount = value + 1;
+                numericTypeAmount.Remove(numericType);
 
-                if (amount > 2)
+                foreach (Transform childTransform in transform)
                 {
-                    numericTypeAmount.Remove(numericType);
+                    var numberOfType = childTransform.GetComponent<TypeOfFigure>().NumericType;
 
-                    foreach (Transform childTransform in transform)
+                    if (numberOfType == numericType)
                     {
-                        var numberOfType = childTransform.GetComponent<TypeOfFigure>().numericType;
-
-                        if (numberOfType == numericType)
-                        {
-                            Destroy(childTransform.gameObject);
-                        }
+                        Instantiate(destroyEffect, childTransform.transform.position, Quaternion.identity);
+                        Destroy(childTransform.gameObject);
                     }
-                }
-                else
-                {
-                    numericTypeAmount[numericType] = amount;
                 }
             }
             else
             {
-                numericTypeAmount.Add(numericType, 1);
+                numericTypeAmount[numericType] = amount;
             }
-
-            CheckGameResult(transform.childCount, spawnedObjectContainer.childCount);
         }
+        else
+        {
+            numericTypeAmount.Add(numericType, 1);
+        }
+    }
+
+    private static void CaptureObject(Transform targetedObject)
+    {
+        var rbOfTargetedObject = targetedObject.GetComponent<Rigidbody2D>();
+        rbOfTargetedObject.bodyType = RigidbodyType2D.Kinematic;
+        rbOfTargetedObject.gravityScale = 0;
+        rbOfTargetedObject.linearVelocity = Vector2.zero;
+        rbOfTargetedObject.angularVelocity = 0f;
     }
 
     private void CheckGameResult(int objectsInBar, int objectsInContainer)
@@ -97,5 +155,9 @@ public class ProgressBar : MonoBehaviour
         {
             winScreen.SetActive(true);
         }
+    }
+    void OnDisable()
+    {
+        playerInput.ObjectAddedToBar -= PutObjectToBar;
     }
 }

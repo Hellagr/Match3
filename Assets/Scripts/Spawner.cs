@@ -24,8 +24,8 @@ public class Spawner : MonoBehaviour
             newObj.SetActive(true);
             newObj.GetComponent<Rigidbody2D>().AddForceY(-20f, ForceMode2D.Impulse);
 
-            var numeric1 = objectToSpawn.GetComponent<TypeOfFigure>().numericType;
-            newObj.GetComponent<TypeOfFigure>().SetNumericType(numeric1);
+            var numeric1 = objectToSpawn.GetComponent<TypeOfFigure>().NumericType;
+            newObj.GetComponent<TypeOfFigure>().NumericType = numeric1;
             newObj.AddComponent<SortingGroup>().sortingOrder = nextOrder++;
 
             generator.Figures.Remove(objectToSpawn);

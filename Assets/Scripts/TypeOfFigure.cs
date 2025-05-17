@@ -2,10 +2,16 @@ using UnityEngine;
 
 public class TypeOfFigure : MonoBehaviour
 {
-    public int numericType { get; private set; } = 0;
-
-    public void SetNumericType(int number)
+    private int numericType = 0;
+    public int NumericType
     {
-        numericType = number;
+        get
+        {
+            return numericType;
+        }
+        set
+        {
+            numericType = value;
+        }
     }
 }
