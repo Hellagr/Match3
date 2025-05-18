@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProgressBar : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
+    [SerializeField] GameObject progressBar;
     [SerializeField] GameObject winScreen;
     [SerializeField] GameObject loseScreen;
     [SerializeField] PlayerInput playerInput;
@@ -35,10 +36,9 @@ public class ProgressBar : MonoBehaviour
         {
             hit.collider.enabled = false;
 
-
             Transform targetedObject = FindParent(hit);
 
-            Vector2 lossyScaleObject = new Vector2(targetedObject.lossyScale.x / transform.lossyScale.x, targetedObject.lossyScale.y / transform.lossyScale.y);
+            Vector2 lossyScaleObject = new Vector2(targetedObject.lossyScale.x / progressBar.transform.lossyScale.x, targetedObject.lossyScale.y / progressBar.transform.lossyScale.y);
 
             Vector2 scaleObjectsForBar = lossyScaleObject * 0.9f;
 
@@ -82,7 +82,7 @@ public class ProgressBar : MonoBehaviour
 
         RecalculateObjectsOnBar(parent);
 
-        CheckGameResult(transform.childCount, spawnedObjectContainer.childCount);
+        CheckGameResult(progressBar.transform.childCount, spawnedObjectContainer.childCount);
     }
 
     private static Transform FindParent(RaycastHit2D hit)
@@ -94,7 +94,7 @@ public class ProgressBar : MonoBehaviour
 
     private void PutObjectOnBar(Transform targetedObject)
     {
-        targetedObject.transform.SetParent(transform);
+        targetedObject.transform.SetParent(progressBar.transform);
         targetedObject.transform.rotation = Quaternion.Euler(0, 0, 0);
     }
 
@@ -107,11 +107,11 @@ public class ProgressBar : MonoBehaviour
         {
             int amount = value + 1;
 
-            if (amount > 2)
+            if (amount >= amountToDestroy)
             {
                 numericTypeAmount.Remove(numericType);
 
-                foreach (Transform childTransform in transform)
+                foreach (Transform childTransform in progressBar.transform)
                 {
                     var numberOfType = childTransform.GetComponent<TypeOfFigure>().NumericType;
 
@@ -149,6 +149,11 @@ public class ProgressBar : MonoBehaviour
             loseScreen.SetActive(true);
             spawnedObjectContainer.gameObject.SetActive(false);
             gameObject.SetActive(false);
+
+            foreach (Transform child in progressBar.transform)
+            {
+                Destroy(child.gameObject);
+            }
         }
 
         if (objectsInContainer < 1)

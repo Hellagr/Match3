@@ -21,7 +21,16 @@ public class PlayerInput : MonoBehaviour
 
     private void Point(InputAction.CallbackContext context)
     {
-        Vector2 point = Touchscreen.current.primaryTouch.position.ReadValue();
+        Vector2 point;
+
+        if (Touchscreen.current != null)
+        {
+            point = Touchscreen.current.primaryTouch.position.ReadValue();
+        }
+        else
+        {
+            point = context.ReadValue<Vector2>();
+        }
 
         ObjectAddedToBar?.Invoke(point);
     }

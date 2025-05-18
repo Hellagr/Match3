@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6755754365468069107}
   - component: {fileID: 5415106611588633585}
   m_Layer: 5
-  m_Name: Particle System
+  m_Name: DestroyEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

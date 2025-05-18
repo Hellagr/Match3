@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameFlowManager : MonoBehaviour
+public class GameStartEndController : MonoBehaviour
 {
     public void StartGame()
     {

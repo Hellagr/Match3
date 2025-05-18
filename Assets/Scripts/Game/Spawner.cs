@@ -1,15 +1,19 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] Transform spawnedObjects;
+    [SerializeField] List<Transform> spawnPoints;
     [SerializeField] Generator generator;
+
+    GameObject spawnedObjects;
     int nextOrder = 0;
 
     void Start()
     {
+        spawnedObjects = GameObject.FindWithTag("SpawnedObjectsPlace");
         StartCoroutine(StartSpawn());
     }
 
@@ -17,12 +21,15 @@ public class Spawner : MonoBehaviour
     {
         while (generator.Figures.Count > 0)
         {
-            System.Random rand = new System.Random();
-            var objectToSpawn = generator.Figures[rand.Next(0, generator.Figures.Count)];
+            System.Random randomObject = new System.Random();
+            var objectToSpawn = generator.Figures[randomObject.Next(0, generator.Figures.Count)];
 
-            var newObj = Instantiate(objectToSpawn, transform.position, Quaternion.identity, spawnedObjects);
+            System.Random randomSpawnPoint = new System.Random();
+            var pointToSpawn = spawnPoints[randomObject.Next(0, spawnPoints.Count)];
+
+            var newObj = Instantiate(objectToSpawn, pointToSpawn.position, Quaternion.identity, spawnedObjects.transform);
             newObj.SetActive(true);
-            newObj.GetComponent<Rigidbody2D>().AddForceY(-20f, ForceMode2D.Impulse);
+            newObj.GetComponent<Rigidbody2D>().AddForceY(-10f, ForceMode2D.Impulse);
 
             var numeric1 = objectToSpawn.GetComponent<TypeOfFigure>().NumericType;
             newObj.GetComponent<TypeOfFigure>().NumericType = numeric1;
